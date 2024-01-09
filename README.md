@@ -68,7 +68,7 @@ Event.OngoingPlayer
 if (buttonPressCount(EventPlayer(), EButtonInput.Melee) == 3)
 if (buttonHoldLength(EventPlayer(), EButtonInput.Melee) >= 2.5)
 {
-    SmallMessage(EventPlayer(), "You double-clicked Interact!");
+    SmallMessage(EventPlayer(), "You double-clicked Interact and held it for 2.5 seconds!");
 }
 ```
 

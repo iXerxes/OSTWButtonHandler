@@ -19,7 +19,7 @@ ___
 
 #### Make your rule and then use the following macros as your conditions:
 
-- <b>Press Count</b> - Track the number of times a button has been pressed.<br>
+- [<b>Press Count</b>](#button-press-count--button-hold-length) - Track the number of times a button has been pressed.<br>
 `Number buttonPressCount(Player player, EButtonInput button)`<br>
   - `player`: The player you want to track.
   - `button`: The button you want to track. Follows the same structure as the OSTW `Button` enum.
@@ -28,7 +28,7 @@ ___
 
 <br>
 
-- <b>Hold Length</b> - Track the length of time a button has been held for (in seconds).<br>
+- [<b>Hold Length</b>](#button-press-count--button-hold-length) - Track the length of time a button has been held for (in seconds).<br>
 `Number buttonHoldLength(Player player, EButtonInput button)`<br>
   - `player`: The player you want to track.
   - `button`: The button you want to track. Follows the same structure as the OSTW `Button` enum.
@@ -37,7 +37,7 @@ ___
 
 <br>
 
-- <b>Press & Hold</b> - Combines the two above into one condition/macro.<br>
+- [<b>Press & Hold</b>](#button-press--hold) - Combines the two above into one condition/macro.<br>
 `Boolean buttonPressAndHold(Player player, EButtonInput button, Number clickCount, Number holdLength)`<br>
   - `player`: The player you want to track.
   - `button`: The button you want to track. Follows the same structure as the OSTW `Button` enum.

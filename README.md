@@ -135,3 +135,27 @@ rule("Double-Click Primary Fire and hold for 5 seconds")
     }
 }
 ```
+
+  ___
+
+### Pros:
+
+1. It's pretty accurate within like ~30ms. You can use an external macro program to accurately test timings.
+2. Very simple to use in an OSTW project.
+2. It does stuff.
+
+### Cons:
+
+1. Specifying a button's hold-length to be below the set multi-click requirement isn't reliable. The design of this module means that it thinks the button is always held for **at least** the multi-click timeout period.
+   - You can get around this, by adding the Workshop `IsButtonHeld` value to your conditions.
+2. Trying to trigger an action based on a multi-click will also trigger those bound to a lesser click-requirement; unless your hold length requirement is greater than the multi-click timeout. **This is on my TODO list to fix.**<br>
+**For example:**
+   - I want to add 1 to a number for a single-click;
+   - And add 2 to a number for a double-click.
+  
+   When double-clicking, both the single-click action and the double-click action will be triggered if the specified hold length 
+
+3. *Slightly minor, but expected* - Trying to rapidly trigger an action with a button press wont work due to the multi-click timeout. 
+   - For example: If you want to quickly trigger a double-click action multiple, you have to wait the duration of multi-click timeout before you can double-click again.
+
+4. I made it.

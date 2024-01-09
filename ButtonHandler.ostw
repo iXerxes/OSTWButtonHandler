@@ -1,0 +1,356 @@
+
+single struct ButtonHandler {
+
+    public Vector primaryFire;
+
+    public Vector secondaryFire;
+
+    public Vector ability1;
+    
+    public Vector ability2;
+
+    public Vector ultimate;
+
+    public Vector interact;
+
+    public Vector jump;
+
+    public Vector crouch;
+
+    public Vector melee;
+
+    public Vector reload;
+
+}
+
+enum EButtonInput {
+
+    PrimaryFire = 0,
+    SecondaryFire = 1,
+    Ability1 = 2,
+    Ability2 = 3,
+    Ultimate = 4,
+    Interact = 5,
+    Jump = 6,
+    Crouch = 7,
+    Melee = 8,
+    Reload = 9
+
+}
+
+Number BH_DEFAULT_MULTICLICK_TIMEOUT: 300;
+
+# Get the number of multi-clicks a button has.
+Number buttonPressCount(Player player, EButtonInput button): XOf((<Vector>EventPlayer().buttonHandler[button]));
+
+# Get the timestamp of when a button was last pressed down.
+Number buttonLastPressedTimestamp(Player player, EButtonInput button): YOf((<Vector>EventPlayer().buttonHandler[button]));
+
+# Get the timestamp of when a button's multi-click is set to timeout. After this timeout, the next button press will start a new multi-click group.
+Number buttonTimeoutTimestamp(Player player, EButtonInput button): ZOf((<Vector>EventPlayer().buttonHandler[button]));
+
+# Get the length of time a button has currently been held for.
+Number buttonHoldLength(Player player, EButtonInput button): BH_gameClock - buttonLastPressedTimestamp(player, button);
+
+# Check if the player has clicked a button a certain number of times, and then held it for a certain length of time.
+Boolean buttonPressAndHold(Player player, EButtonInput button, Number clickCount, Number holdLength): buttonPressCount(player, button) && (buttonHoldLength(player, button) >= holdLength);
+
+
+globalvar Number BH_gameClock;
+
+globalvar Number BH_multiClickSpeed;
+
+playervar ButtonHandler buttonHandler;
+
+rule: "ButtonHandler > Init"
+{
+    ChaseVariableAtRate(BH_gameClock, BH_gameClock + 1, 1, RateChaseReevaluation.DestinationAndRate);
+    BH_multiClickSpeed = WorkshopSettingInteger("ButtonHandler", "Multi-Click Speed (Milliseconds)", BH_DEFAULT_MULTICLICK_TIMEOUT, 100, 1000, 1) / 1000; // Determines for how long a new button press should be a part of the existing multi-click group.
+}
+
+rule: "ButtonHandler > Init Button States (Player)"
+Event.OngoingPlayer
+{
+
+    buttonHandler = {
+
+        primaryFire:    Vector(0,0,0),
+        secondaryFire:  Vector(0,0,0),
+        ability1:       Vector(0,0,0),
+        ability2:       Vector(0,0,0),
+        ultimate:       Vector(0,0,0),
+        interact:       Vector(0,0,0),
+        jump:           Vector(0,0,0),
+        crouch:         Vector(0,0,0),
+        melee:          Vector(0,0,0),
+        reload:         Vector(0,0,0)
+
+    };
+}
+
+// DEBUG
+disabled rule: "ButtonHandler > DEBUG - Disable to hide."
+Event.OngoingPlayer
+{
+
+    CreateHudText(EventPlayer(), null,
+    <"[Primary Fire] P: <0> | L: <1> | T: <2>", // PressCount | Last Pressed Timestamp | Timeout Timestamp
+        buttonPressCount(EventPlayer(), EButtonInput.PrimaryFire),
+        buttonLastPressedTimestamp(EventPlayer(), EButtonInput.PrimaryFire),
+        buttonTimeoutTimestamp(EventPlayer(), EButtonInput.PrimaryFire)
+    >,
+    null, Location.Left, 0, null, Color.Blue, null, HudTextRev.String, Spectators.DefaultVisibility);
+
+
+    CreateHudText(EventPlayer(), null,
+    <"[Secondary Fire] P: <0> | L: <1> | T: <2>",
+        buttonPressCount(EventPlayer(), EButtonInput.SecondaryFire),
+        buttonLastPressedTimestamp(EventPlayer(), EButtonInput.SecondaryFire),
+        buttonTimeoutTimestamp(EventPlayer(), EButtonInput.SecondaryFire)
+    >,
+    null, Location.Left, 1, null, Color.Blue, null, HudTextRev.String, Spectators.DefaultVisibility);
+
+
+    CreateHudText(EventPlayer(), null,
+    <"[Ability 1] P: <0> | L: <1> | T: <2>",
+        buttonPressCount(EventPlayer(), EButtonInput.Ability1),
+        buttonLastPressedTimestamp(EventPlayer(), EButtonInput.Ability1),
+        buttonTimeoutTimestamp(EventPlayer(), EButtonInput.Ability1)
+    >,
+    null, Location.Left, 2, null, Color.Blue, null, HudTextRev.String, Spectators.DefaultVisibility);
+
+
+    CreateHudText(EventPlayer(), null,
+    <"[Ability 2] P: <0> | L: <1> | T: <2>",
+        buttonPressCount(EventPlayer(), EButtonInput.Ability2),
+        buttonLastPressedTimestamp(EventPlayer(), EButtonInput.Ability2),
+        buttonTimeoutTimestamp(EventPlayer(), EButtonInput.Ability2)
+    >,
+    null, Location.Left, 3, null, Color.Blue, null, HudTextRev.String, Spectators.DefaultVisibility);
+
+
+    CreateHudText(EventPlayer(), null,
+    <"[Ultimate] P: <0> | L: <1> | T: <2>",
+        buttonPressCount(EventPlayer(), EButtonInput.Ultimate),
+        buttonLastPressedTimestamp(EventPlayer(), EButtonInput.Ultimate),
+        buttonTimeoutTimestamp(EventPlayer(), EButtonInput.Ultimate)
+    >,
+    null, Location.Left, 4, null, Color.Blue, null, HudTextRev.String, Spectators.DefaultVisibility);
+
+
+    CreateHudText(EventPlayer(), null,
+    <"[Interact] P: <0> | L: <1> | T: <2>",
+        buttonPressCount(EventPlayer(), EButtonInput.Interact),
+        buttonLastPressedTimestamp(EventPlayer(), EButtonInput.Interact),
+        buttonTimeoutTimestamp(EventPlayer(), EButtonInput.Interact)
+    >,
+    null, Location.Left, 5, null, Color.Blue, null, HudTextRev.String, Spectators.DefaultVisibility);
+
+
+    CreateHudText(EventPlayer(), null,
+    <"[Jump] P: <0> | L: <1> | T: <2>",
+        buttonPressCount(EventPlayer(), EButtonInput.Jump),
+        buttonLastPressedTimestamp(EventPlayer(), EButtonInput.Jump),
+        buttonTimeoutTimestamp(EventPlayer(), EButtonInput.Jump)
+    >,
+    null, Location.Left, 6, null, Color.Blue, null, HudTextRev.String, Spectators.DefaultVisibility);
+
+
+    CreateHudText(EventPlayer(), null,
+    <"[Crouch] P: <0> | L: <1> | T: <2>",
+        buttonPressCount(EventPlayer(), EButtonInput.Crouch),
+        buttonLastPressedTimestamp(EventPlayer(), EButtonInput.Crouch),
+        buttonTimeoutTimestamp(EventPlayer(), EButtonInput.Crouch)
+    >,
+    null, Location.Left, 7, null, Color.Blue, null, HudTextRev.String, Spectators.DefaultVisibility);
+
+
+    CreateHudText(EventPlayer(), null,
+    <"[Melee] P: <0> | L: <1> | T: <2>",
+        buttonPressCount(EventPlayer(), EButtonInput.Melee),
+        buttonLastPressedTimestamp(EventPlayer(), EButtonInput.Melee),
+        buttonTimeoutTimestamp(EventPlayer(), EButtonInput.Melee)
+    >,
+    null, Location.Left, 8, null, Color.Blue, null, HudTextRev.String, Spectators.DefaultVisibility);
+
+
+    CreateHudText(EventPlayer(), null,
+        <"[Reload] P: <0> | L: <1> | T: <2>",
+        buttonPressCount(EventPlayer(), EButtonInput.Reload),
+        buttonLastPressedTimestamp(EventPlayer(), EButtonInput.Reload),
+        buttonTimeoutTimestamp(EventPlayer(), EButtonInput.Reload)
+        >,
+    null, Location.Left, 9, null, Color.Blue, null, HudTextRev.String, Spectators.DefaultVisibility);
+
+}
+
+rule: "ButtonHandler > Primary Fire"
+Event.OngoingPlayer
+if (IsButtonHeld(EventPlayer(), Button.PrimaryFire))
+{
+    // Increment the button state.
+    EventPlayer().buttonHandler.primaryFire = Vector(
+        buttonPressCount(EventPlayer(), EButtonInput.PrimaryFire) + 1,
+        BH_gameClock,
+        BH_gameClock + BH_multiClickSpeed
+    );
+
+    WaitUntil(!EventPlayer().IsButtonHeld(Button.PrimaryFire), 9999999); // Wait until the button is released.
+    Wait(buttonTimeoutTimestamp(EventPlayer(), EButtonInput.PrimaryFire) - BH_gameClock, WaitBehavior.RestartWhenTrue); // Wait for multi-click timeout.
+
+    // Reset the button state.
+    EventPlayer().buttonHandler.primaryFire = Vector(0,0,0);
+}
+
+
+rule: "ButtonHandler > Secondary Fire"
+Event.OngoingPlayer
+if (IsButtonHeld(EventPlayer(), Button.SecondaryFire))
+{
+    EventPlayer().buttonHandler.secondaryFire = Vector(
+        buttonPressCount(EventPlayer(), EButtonInput.SecondaryFire) + 1,
+        BH_gameClock,
+        BH_gameClock + BH_multiClickSpeed
+    );
+
+    WaitUntil(!EventPlayer().IsButtonHeld(Button.SecondaryFire), 9999999);
+    Wait(buttonTimeoutTimestamp(EventPlayer(), EButtonInput.SecondaryFire) - BH_gameClock, WaitBehavior.RestartWhenTrue);
+
+    EventPlayer().buttonHandler.secondaryFire = Vector(0,0,0);
+}
+
+
+rule: "ButtonHandler > Ability 1 (*Shift)"
+Event.OngoingPlayer
+if (IsButtonHeld(EventPlayer(), Button.Ability1))
+{
+    EventPlayer().buttonHandler.ability1 = Vector(
+        buttonPressCount(EventPlayer(), EButtonInput.Ability1) + 1,
+        BH_gameClock,
+        BH_gameClock + BH_multiClickSpeed
+    );
+
+    WaitUntil(!EventPlayer().IsButtonHeld(Button.Ability1), 9999999);
+    Wait(buttonTimeoutTimestamp(EventPlayer(), EButtonInput.Ability1) - BH_gameClock, WaitBehavior.RestartWhenTrue);
+
+    EventPlayer().buttonHandler.ability1 = Vector(0,0,0);
+}
+
+
+rule: "ButtonHandler > Ability 2 (*E)"
+Event.OngoingPlayer
+if (IsButtonHeld(EventPlayer(), Button.Ability2))
+{
+    EventPlayer().buttonHandler.ability2 = Vector(
+        buttonPressCount(EventPlayer(), EButtonInput.Ability2) + 1,
+        BH_gameClock,
+        BH_gameClock + BH_multiClickSpeed
+    );
+
+    WaitUntil(!EventPlayer().IsButtonHeld(Button.Ability2), 9999999);
+    Wait(buttonTimeoutTimestamp(EventPlayer(), EButtonInput.Ability2) - BH_gameClock, WaitBehavior.RestartWhenTrue);
+
+    EventPlayer().buttonHandler.ability2 = Vector(0,0,0);
+}
+
+
+rule: "ButtonHandler > Ultimate"
+Event.OngoingPlayer
+if (IsButtonHeld(EventPlayer(), Button.Ultimate))
+{
+    EventPlayer().buttonHandler.ultimate = Vector(
+        buttonPressCount(EventPlayer(), EButtonInput.Ultimate) + 1,
+        BH_gameClock,
+        BH_gameClock + BH_multiClickSpeed
+    );
+
+    WaitUntil(!EventPlayer().IsButtonHeld(Button.Ultimate), 9999999);
+    Wait(buttonTimeoutTimestamp(EventPlayer(), EButtonInput.Ultimate) - BH_gameClock, WaitBehavior.RestartWhenTrue);
+
+    EventPlayer().buttonHandler.ultimate = Vector(0,0,0);
+}
+
+
+rule: "ButtonHandler > Interact"
+Event.OngoingPlayer
+if (IsButtonHeld(EventPlayer(), Button.Interact))
+{
+    EventPlayer().buttonHandler.interact = Vector(
+        buttonPressCount(EventPlayer(), EButtonInput.Interact) + 1,
+        BH_gameClock,
+        BH_gameClock + BH_multiClickSpeed
+    );
+
+    WaitUntil(!EventPlayer().IsButtonHeld(Button.Interact), 9999999);
+    Wait(buttonTimeoutTimestamp(EventPlayer(), EButtonInput.Interact) - BH_gameClock, WaitBehavior.RestartWhenTrue);
+
+    EventPlayer().buttonHandler.interact = Vector(0,0,0);
+}
+
+
+rule: "ButtonHandler > Jump"
+Event.OngoingPlayer
+if (IsButtonHeld(EventPlayer(), Button.Jump))
+{
+    EventPlayer().buttonHandler.jump = Vector(
+        buttonPressCount(EventPlayer(), EButtonInput.Jump) + 1,
+        BH_gameClock,
+        BH_gameClock + BH_multiClickSpeed
+    );
+
+    WaitUntil(!EventPlayer().IsButtonHeld(Button.Jump), 9999999);
+    Wait(buttonTimeoutTimestamp(EventPlayer(), EButtonInput.Jump) - BH_gameClock, WaitBehavior.RestartWhenTrue);
+
+    EventPlayer().buttonHandler.jump = Vector(0,0,0);
+}
+
+
+rule: "ButtonHandler > Crouch"
+Event.OngoingPlayer
+if (IsButtonHeld(EventPlayer(), Button.Crouch))
+{
+    EventPlayer().buttonHandler.crouch = Vector(
+        buttonPressCount(EventPlayer(), EButtonInput.Crouch) + 1,
+        BH_gameClock,
+        BH_gameClock + BH_multiClickSpeed
+    );
+
+    WaitUntil(!EventPlayer().IsButtonHeld(Button.Crouch), 9999999);
+    Wait(buttonTimeoutTimestamp(EventPlayer(), EButtonInput.Crouch) - BH_gameClock, WaitBehavior.RestartWhenTrue);
+
+    EventPlayer().buttonHandler.crouch = Vector(0,0,0);
+}
+
+
+rule: "ButtonHandler > Melee"
+Event.OngoingPlayer
+if (IsButtonHeld(EventPlayer(), Button.Melee))
+{
+    EventPlayer().buttonHandler.melee = Vector(
+        buttonPressCount(EventPlayer(), EButtonInput.Melee) + 1,
+        BH_gameClock,
+        BH_gameClock + BH_multiClickSpeed
+    );
+
+    WaitUntil(!EventPlayer().IsButtonHeld(Button.Melee), 9999999);
+    Wait(buttonTimeoutTimestamp(EventPlayer(), EButtonInput.Melee) - BH_gameClock, WaitBehavior.RestartWhenTrue);
+
+    EventPlayer().buttonHandler.melee = Vector(0,0,0);
+}
+
+
+rule: "ButtonHandler > Reload"
+Event.OngoingPlayer
+if (IsButtonHeld(EventPlayer(), Button.Reload))
+{
+    EventPlayer().buttonHandler.reload = Vector(
+        buttonPressCount(EventPlayer(), EButtonInput.Reload) + 1,
+        BH_gameClock,
+        BH_gameClock + BH_multiClickSpeed
+    );
+
+    WaitUntil(!EventPlayer().IsButtonHeld(Button.Reload), 9999999);
+    Wait(buttonTimeoutTimestamp(EventPlayer(), EButtonInput.Reload) - BH_gameClock, WaitBehavior.RestartWhenTrue);
+
+    EventPlayer().buttonHandler.reload = Vector(0,0,0);
+}

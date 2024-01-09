@@ -41,18 +41,30 @@ enum EButtonInput {
 Number BH_DEFAULT_MULTICLICK_TIMEOUT: 300;
 
 # Get the number of multi-clicks a button has.
+# - `player`: The player to get the `buttonPressCount` of.
+# - `button`: The button to check for. Follows the same structure as the OSTW Button enum.
 Number buttonPressCount(Player player, EButtonInput button): XOf((<Vector>EventPlayer().buttonHandler[button]));
 
 # Get the timestamp of when a button was last pressed down.
+# - `player`: The player to get the `lastPressedTimestamp` of.
+# - `button`: The button to check for. Follows the same structure as the OSTW Button enum.
 Number buttonLastPressedTimestamp(Player player, EButtonInput button): YOf((<Vector>EventPlayer().buttonHandler[button]));
 
 # Get the timestamp of when a button's multi-click is set to timeout. After this timeout, the next button press will start a new multi-click group.
+# - `player`: The player to get the `timeoutTimestamp` of.
+# - `button`: The button to check for. Follows the same structure as the OSTW Button enum.
 Number buttonTimeoutTimestamp(Player player, EButtonInput button): ZOf((<Vector>EventPlayer().buttonHandler[button]));
 
 # Get the length of time a button has currently been held for.
+# - `player`: The player to get the button `holdLength` of.
+# - `button`: The button to check for. Follows the same structure as the OSTW Button enum.
 Number buttonHoldLength(Player player, EButtonInput button): BH_gameClock - buttonLastPressedTimestamp(player, button);
 
 # Check if the player has clicked a button a certain number of times, and then held it for a certain length of time.
+# - `player`: The player to track.
+# - `button`: The button to check for. Follows the same structure as the OSTW Button enum.
+# - `clickCount`: How many multi-clicks to check for.
+# - `holdLength`: How long the button should finally be held for.
 Boolean buttonPressAndHold(Player player, EButtonInput button, Number clickCount, Number holdLength): buttonPressCount(player, button) && (buttonHoldLength(player, button) >= holdLength);
 
 

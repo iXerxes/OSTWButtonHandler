@@ -46,3 +46,92 @@ ___
   
 
   Example: `If (buttonPressAndHold(player, button, 3, 1.5))`<br>
+
+  ___
+
+## Examples
+
+### Button Press Count & Button Hold Length
+
+OSTW:
+
+```hs
+rule: "Double-Click Interact"
+Event.OngoingPlayer
+if (buttonPressCount(EventPlayer(), EButtonInput.Interact) == 2)
+{
+    SmallMessage(EventPlayer(), "You double-clicked Interact!");
+}
+
+rule: "Triple-Click Melee & hold for 2.5 seconds"
+Event.OngoingPlayer
+if (buttonPressCount(EventPlayer(), EButtonInput.Melee) == 3)
+if (buttonHoldLength(EventPlayer(), EButtonInput.Melee) >= 2.5)
+{
+    SmallMessage(EventPlayer(), "You double-clicked Interact!");
+}
+```
+
+Workshop Output:
+
+```hs
+rule("Double-Click Interact")
+{
+    event{Ongoing - Each Player;All;All;}
+
+    conditions
+    {
+        X Component Of(Value In Array(Player Variable(Event Player, buttonHandler), 5)) == 2;
+    }
+    actions
+    {
+        Small Message(Event Player, Custom String("You double-clicked Interact!"));
+    }
+}
+
+rule("Triple-Click Melee & hold for 2.5 seconds")
+{
+    event{Ongoing - Each Player;All;All;}
+
+    conditions
+    {
+        X Component Of(Value In Array(Player Variable(Event Player, buttonHandler), 8)) == 3;
+        Subtract(Global Variable(BH_gameClock), Y Component Of(Value In Array(Player Variable(Event Player, buttonHandler), 8))) >= 2.5;
+    }
+    actions
+    {
+        Small Message(Event Player, Custom String("You triple-clicked Melee and held it for 2.5 seconds!"));
+    }
+}
+```
+
+### Button Press & Hold
+
+OSTW:
+
+```hs
+rule: "Double-Click Primary Fire and hold for 5 seconds"
+Event.OngoingPlayer
+if (buttonPressAndHold(EventPlayer(), EButtonInput.PrimaryFire, 2, 5))
+{
+    SmallMessage(EventPlayer(), "You double-clicked Primary Fire and held it for 5 seconds!");
+}
+```
+
+Workshop Output:
+
+```hs
+rule("Double-Click Primary Fire and hold for 5 seconds")
+{
+    event{Ongoing - Each Player;All;All;}
+
+    conditions
+    {
+        And(X Component Of(First Of(Player Variable(Event Player, buttonHandler))), Compare(Subtract(Global Variable(BH_gameClock), Y Component Of(First Of(Player Variable(Event Player, buttonHandler)))), >=, 5)) == True;
+    }
+    actions
+    {
+        Small Message(Event Player, Custom String("You double-clicked Primary Fire and held it for 5 seconds!"));
+    }
+}
+```

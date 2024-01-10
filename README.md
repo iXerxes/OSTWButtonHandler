@@ -153,9 +153,9 @@ rule("Double-Click Primary Fire and hold for 5 seconds")
    - I want to add 1 to a number for a single-click;
    - And add 2 to a number for a double-click.
   
-   When double-clicking, both the single-click action and the double-click action will be triggered if the specified hold length 
+   When double-clicking, both the single-click action and the double-click action will be triggered if the specified hold length is less than the multi-click timeout.
 
 3. *Slightly minor, but expected* - Trying to rapidly trigger an action with a button press wont work due to the multi-click timeout. 
-   - For example: If you want to quickly trigger a double-click action multiple, you have to wait the duration of multi-click timeout before you can double-click again.
+   - For example: If you want to quickly trigger a double-click action multiple times, you have to wait the duration of multi-click timeout before you can double-click again.
 
 4. I made it.

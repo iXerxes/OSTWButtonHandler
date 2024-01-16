@@ -11,7 +11,7 @@ If you have a mode that relies a lot on various key-press-activated commands, th
 - Precision - Tracking the hold length is accurate up to about ~15-30ms. Ping doesn't seem to play much of a part in this either.
 
 ### Multi-Clicks
-Multi-Clicks track when a button is pressed multiple times in quick succession. You can use this to trigger different events with the same button. Similar to how single and double click works. The default is set to 300ms. Presses within ~300ms are tracked as a multi-click.
+Multi-Clicks track when a button is pressed multiple times in quick succession. You can use this to trigger different events with the same button. Similar to how a single and double click works. The default is set to 300ms. Presses within ~300ms of each other are tracked as a multi-click.
 
 ___
 
@@ -19,12 +19,12 @@ ___
 
 #### Make your rule and then use the following macros as your conditions:
 
-- [<b>Press Count</b>](#button-press-count--button-hold-length) - Track the number of times a button has been pressed.<br>
+- [<b>Press Count</b>](#button-press-count--button-hold-length) - Track the number of times a button has been pressed (multi-clicks).<br>
 `Number buttonPressCount(Player player, EButtonInput button)`<br>
   - `player`: The player you want to track.
   - `button`: The button you want to track. Follows the same structure as the OSTW `Button` enum.
 
-  Example: `If (buttonHoldLength(player, button) >= 3)`<br>
+  Example: `If (buttonPressCount(player, button) >= 3)`<br>
 
 <br>
 

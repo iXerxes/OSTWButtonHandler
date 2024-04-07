@@ -6,15 +6,15 @@ import "ButtonHandler.ostw";
 
 rule: "Double-Click Interact"
 Event.OngoingPlayer
-if (buttonPressCount(EventPlayer(), EButtonInput.Interact) == 2)
+if (ButtonPressCount(EventPlayer(), EButtonInput.Interact) == 2)
 {
     SmallMessage(EventPlayer(), "You double-clicked Interact!");
 }
 
-rule: "Triple-Click Melee and hold for 2.5 seconds"
+rule: "Triple-Click Melee & hold for 2.5 seconds"
 Event.OngoingPlayer
-if (buttonPressCount(EventPlayer(), EButtonInput.Melee) == 3)
-if (buttonHoldLength(EventPlayer(), EButtonInput.Melee) >= 2.5)
+if (ButtonPressCount(EventPlayer(), EButtonInput.Melee) == 3)
+if (ButtonHoldLength(EventPlayer(), EButtonInput.Melee) >= 2.5)
 {
     SmallMessage(EventPlayer(), "You triple-clicked Melee and held it for 2.5 seconds!");
 }
@@ -25,7 +25,47 @@ if (buttonHoldLength(EventPlayer(), EButtonInput.Melee) >= 2.5)
 
 rule: "Double-Click Primary Fire and hold for 5 seconds"
 Event.OngoingPlayer
-if (buttonPressAndHold(EventPlayer(), EButtonInput.PrimaryFire, 2, 5))
+if (ButtonPressAndHold(EventPlayer(), EButtonInput.PrimaryFire, 2, 5))
 {
     SmallMessage(EventPlayer(), "You double-clicked Primary Fire and held it for 5 seconds!");
+}
+
+
+// Button Post-Hold
+
+
+rule: "Hold Crouch for at least 1.5 seconds and then release."
+Event.OngoingPlayer
+if (ButtonPostHoldLength(EventPlayer(), EButtonInput.Crouch) >= 1.5)
+{
+    SmallMessage(EventPlayer(), "You held crouch for at least 1.5 seconds, and then released!");
+}
+
+
+// Button Press & Post-Hold
+
+
+rule: "Double-Click Reload, and then hold for hold for at least 3 second before releasing."
+Event.OngoingPlayer
+if (ButtonPressAndPostHold(EventPlayer(), EButtonInput.Reload, 2, 3))
+{
+    SmallMessage(EventPlayer(), "You double-clicked Reload, held it for at least 3 seconds, and then released!");
+}
+
+
+// Note:
+// Using "Press & Hold" or "Press & Post-Hold" will alwys evaluate the hold length as equal-to-or-greater-than the specified time.
+// If you want to trigger a condition where the hold length is less than the specified time, use both conditions separately.
+// This is less useful for the normal "Hold Length", since it will always trigger, but paired with "Post-Hold Length" allows you to check the hold length after release.
+// HOWEVER, this also requires that you check that the hold length is not zero:
+
+
+// Make sure the Post-Hold Length is > 0.
+rule: "Triple-Click Ultimate, and then hold for less than 2 seconds before releasing."
+Event.OngoingPlayer
+if (ButtonPressCount(EventPlayer(), EButtonInput.Ultimate) == 3)
+if (ButtonPostHoldLength(EventPlayer(), EButtonInput.Ultimate) > 0)
+if (ButtonPostHoldLength(EventPlayer(), EButtonInput.Ultimate) < 2)
+{
+    SmallMessage(EventPlayer(), "[B] You triple-clicked Ultimate, held it for less than 2 seconds, and then released!");
 }

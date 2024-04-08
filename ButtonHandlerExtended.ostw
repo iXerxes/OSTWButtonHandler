@@ -1,0 +1,561 @@
+import "D:\Jordan\Overwatch\Workshop\OSTW\_Environments\NepalDev.json";
+
+Number BH_WAIT_TIMEOUT: 999999;
+
+enum EButtonInput {
+
+    PrimaryFire,
+    SecondaryFire,
+    Ability1,
+    Ability2,
+    Ultimate,
+    Interact,
+    Jump,
+    Crouch,
+    Melee,
+    Reload,
+
+
+    AnySpray,
+    SprayUp,
+    SprayDown,
+    SprayLeft,
+    SprayRight
+
+}
+
+
+//
+// -- Globals --
+//
+
+
+# A number that infinitely increases by 1 each second, used to timestamp button events.
+public globalvar Number _BH_Clock;
+
+single struct MultiClickSpeedStore {
+
+    # Multi-click speed for button events.
+    public Number Button;
+
+    # Multi-click speed for spray events. The game only allows you to spray once per second.
+    public Number Spray;
+}
+
+# How quickly a button must be pressed after the first click to be considered part of the multi-click chain.
+public globalvar MultiClickSpeedStore BH_MultiClickSpeed;
+
+
+//
+// -- Player Locals --
+//
+
+
+single struct ButtonStateStore {
+    public Boolean|Vector PrimaryFire;
+    public Boolean|Vector SecondaryFire;
+    public Boolean|Vector Ability1;
+    public Boolean|Vector Ability2;
+    public Boolean|Vector Ultimate;
+    public Boolean|Vector Interact;
+    public Boolean|Vector Jump;
+    public Boolean|Vector Crouch;
+    public Boolean|Vector Melee;
+    public Boolean|Vector Reload;
+
+
+    public Boolean|Vector AnySpray;
+    public Boolean|Vector SprayUp;
+    public Boolean|Vector SprayDown;
+    public Boolean|Vector SprayLeft;
+    public Boolean|Vector SprayRight;
+
+}
+
+public playervar ButtonStateStore _ButtonHandler;
+
+
+//
+// -- API --
+//
+
+
+# Get the number of multi-clicks a button has accumulated. Persists until the button's state has been reset (exceeded the multi-click timeout duration).
+# 
+# - `player`: The player to check.
+# - `button`: The button to check.
+Number ButtonPressCount(Player player, EButtonInput button): XOf((player._ButtonHandler[button]));
+
+# Get the timestamp of when a button was last pressed; 0 if the button is not currently being held.
+# 
+# - `player`: The player to check.
+# - `button`: The button to check.
+Number ButtonLastPressedTimestamp(Player player, EButtonInput button): YOf((player._ButtonHandler[button]));
+
+# Get the length of time a button has been held for; 0 if the button is not currently being held.
+# - `player`: The player to check.
+# - `button`: The button to check.
+Number ButtonHoldLength(Player player, EButtonInput button): player._ButtonHandler[button] ? (_BH_Clock - ButtonLastPressedTimestamp(player, button)) : 0;
+
+# Get the length of time a button was held for ***after*** being released.
+# 
+# Returns 0 If:
+# - The button is currently being held.
+# - The button has no active state.
+# 
+# Returns Non-Zero If:
+# - The button has been released ***and*** is still within the multi-click timeout window.
+# 
+# - `player`: The player to check.
+# - `button`: The button to check.
+Number ButtonPostHoldLength(Player player, EButtonInput button): ZOf((player._ButtonHandler[button]));
+
+# Check if the player has pressed a button the specified number of times, and held it for the specified duration in seconds.
+# 
+# - `player`: The player to check.
+# - `button`: The button to check.
+# - `clickCount`: The number of multi-clicks.
+# - `holdLength`: How button hold length.
+Boolean ButtonPressAndHold(Player player, EButtonInput button, Number clickCount, Number holdLength): ButtonPressCount(player, button) >= clickCount && ButtonHoldLength(player, button) >= holdLength;
+
+# Check ***after being released*** if a button was pressed the specified number of times, and held for the specified duration in seconds.
+# 
+# Once a button is released, the final hold length is stored for 1 game tick, before the button's state is reset.
+# 
+# - `player`: The player to check.
+# - `button`: The button to check.
+# - `clickCount`: The number of multi-clicks.
+# - `holdLength`: How button hold length.
+Boolean ButtonPressAndPostHold(Player player, EButtonInput button, Number clickCount, Number holdLength): ButtonPressCount(player, button) >= clickCount && ButtonPostHoldLength(player, button) >= holdLength;
+
+
+//
+// -- Init --
+//
+
+
+rule: "[BH] Init Globals"
+{
+    ChaseVariableAtRate(_BH_Clock, _BH_Clock + 1, 1, RateChaseReevaluation.DestinationAndRate);
+    BH_MultiClickSpeed.Button = WorkshopSettingInteger("Button Handler", "Button Multi-Click Speed (ms)", 300, 100, 5000, 0) / 1000;
+
+    // The game only allows you to spray once per second.
+    BH_MultiClickSpeed.Spray = WorkshopSettingInteger("Button Handler", "Spray Multi-Click Speed (ms)", 1100, 1000, 5000, 1) / 1000;
+}
+
+
+//
+// -- Button Events --
+//
+
+
+rule: "[BH] Primary Fire"
+Event.OngoingPlayer
+if (EventPlayer().IsButtonHeld(Button.PrimaryFire))
+{
+    // Initialize or increment the pressed button state.
+    EventPlayer()._ButtonHandler.PrimaryFire = EventPlayer()._ButtonHandler.PrimaryFire
+        ? Vector(
+            ButtonPressCount(EventPlayer(), EButtonInput.PrimaryFire) + 1,
+            _BH_Clock,
+            0
+        )
+        : Vector(1, _BH_Clock, 0);
+
+    WaitUntil(!EventPlayer().IsButtonHeld(Button.PrimaryFire), BH_WAIT_TIMEOUT);
+
+    // Flag the button as released, and store the hold-duration.
+    EventPlayer()._ButtonHandler.PrimaryFire = Vector(
+            ButtonPressCount(EventPlayer(), EButtonInput.PrimaryFire),
+            ButtonLastPressedTimestamp(EventPlayer(), EButtonInput.PrimaryFire),
+            _BH_Clock - ButtonLastPressedTimestamp(EventPlayer(), EButtonInput.PrimaryFire),
+        );
+    Wait(BH_MultiClickSpeed.Button - ButtonPostHoldLength(EventPlayer(), EButtonInput.PrimaryFire), WaitBehavior.RestartWhenTrue);
+
+    // Reset the button state.
+    EventPlayer()._ButtonHandler.PrimaryFire = false;
+}
+
+rule: "[BH] Secondary Fire"
+Event.OngoingPlayer
+if (EventPlayer().IsButtonHeld(Button.SecondaryFire))
+{
+    // Initialize or increment the pressed button state.
+    EventPlayer()._ButtonHandler.SecondaryFire = EventPlayer()._ButtonHandler.SecondaryFire
+        ? Vector(
+            ButtonPressCount(EventPlayer(), EButtonInput.SecondaryFire) + 1,
+            _BH_Clock,
+            0
+        )
+        : Vector(1, _BH_Clock, 0);
+
+    WaitUntil(!EventPlayer().IsButtonHeld(Button.SecondaryFire), BH_WAIT_TIMEOUT);
+
+    // Flag the button as released, and store the hold-duration.
+    EventPlayer()._ButtonHandler.SecondaryFire = Vector(
+            ButtonPressCount(EventPlayer(), EButtonInput.SecondaryFire),
+            ButtonLastPressedTimestamp(EventPlayer(), EButtonInput.SecondaryFire),
+            _BH_Clock - ButtonLastPressedTimestamp(EventPlayer(), EButtonInput.SecondaryFire),
+        );
+    Wait(BH_MultiClickSpeed.Button - ButtonPostHoldLength(EventPlayer(), EButtonInput.SecondaryFire), WaitBehavior.RestartWhenTrue);
+
+    // Reset the button state.
+    EventPlayer()._ButtonHandler.SecondaryFire = false;
+}
+
+rule: "[BH] Ability 1"
+Event.OngoingPlayer
+if (EventPlayer().IsButtonHeld(Button.Ability1))
+{
+    // Initialize or increment the pressed button state.
+    EventPlayer()._ButtonHandler.Ability1 = EventPlayer()._ButtonHandler.Ability1
+        ? Vector(
+            ButtonPressCount(EventPlayer(), EButtonInput.Ability1) + 1,
+            _BH_Clock,
+            0
+        )
+        : Vector(1, _BH_Clock, 0);
+
+    WaitUntil(!EventPlayer().IsButtonHeld(Button.Ability1), BH_WAIT_TIMEOUT);
+
+    // Flag the button as released, and store the hold-duration.
+    EventPlayer()._ButtonHandler.Ability1 = Vector(
+            ButtonPressCount(EventPlayer(), EButtonInput.Ability1),
+            ButtonLastPressedTimestamp(EventPlayer(), EButtonInput.Ability1),
+            _BH_Clock - ButtonLastPressedTimestamp(EventPlayer(), EButtonInput.Ability1),
+        );
+    Wait(BH_MultiClickSpeed.Button - ButtonPostHoldLength(EventPlayer(), EButtonInput.Ability1), WaitBehavior.RestartWhenTrue);
+
+    // Reset the button state.
+    EventPlayer()._ButtonHandler.Ability1 = false;
+}
+
+rule: "[BH] Ability 2"
+Event.OngoingPlayer
+if (EventPlayer().IsButtonHeld(Button.Ability2))
+{
+    // Initialize or increment the pressed button state.
+    EventPlayer()._ButtonHandler.Ability2 = EventPlayer()._ButtonHandler.Ability2
+        ? Vector(
+            ButtonPressCount(EventPlayer(), EButtonInput.Ability2) + 1,
+            _BH_Clock,
+            0
+        )
+        : Vector(1, _BH_Clock, 0);
+
+    WaitUntil(!EventPlayer().IsButtonHeld(Button.Ability2), BH_WAIT_TIMEOUT);
+
+    // Flag the button as released, and store the hold-duration.
+    EventPlayer()._ButtonHandler.Ability2 = Vector(
+            ButtonPressCount(EventPlayer(), EButtonInput.Ability2),
+            ButtonLastPressedTimestamp(EventPlayer(), EButtonInput.Ability2),
+            _BH_Clock - ButtonLastPressedTimestamp(EventPlayer(), EButtonInput.Ability2),
+        );
+    Wait(BH_MultiClickSpeed.Button - ButtonPostHoldLength(EventPlayer(), EButtonInput.Ability2), WaitBehavior.RestartWhenTrue);
+
+    // Reset the button state.
+    EventPlayer()._ButtonHandler.Ability2 = false;
+}
+
+rule: "[BH] Ultimate"
+Event.OngoingPlayer
+if (EventPlayer().IsButtonHeld(Button.Ultimate))
+{
+    // Initialize or increment the pressed button state.
+    EventPlayer()._ButtonHandler.Ultimate = EventPlayer()._ButtonHandler.Ultimate
+        ? Vector(
+            ButtonPressCount(EventPlayer(), EButtonInput.Ultimate) + 1,
+            _BH_Clock,
+            0
+        )
+        : Vector(1, _BH_Clock, 0);
+
+    WaitUntil(!EventPlayer().IsButtonHeld(Button.Ultimate), BH_WAIT_TIMEOUT);
+
+    // Flag the button as released, and store the hold-duration.
+    EventPlayer()._ButtonHandler.Ultimate = Vector(
+            ButtonPressCount(EventPlayer(), EButtonInput.Ultimate),
+            ButtonLastPressedTimestamp(EventPlayer(), EButtonInput.Ultimate),
+            _BH_Clock - ButtonLastPressedTimestamp(EventPlayer(), EButtonInput.Ultimate),
+        );
+    Wait(BH_MultiClickSpeed.Button - ButtonPostHoldLength(EventPlayer(), EButtonInput.Ultimate), WaitBehavior.RestartWhenTrue);
+
+    // Reset the button state.
+    EventPlayer()._ButtonHandler.Ultimate = false;
+}
+
+rule: "[BH] Interact"
+Event.OngoingPlayer
+if (EventPlayer().IsButtonHeld(Button.Interact))
+{
+    // Initialize or increment the pressed button state.
+    EventPlayer()._ButtonHandler.Interact = EventPlayer()._ButtonHandler.Interact
+        ? Vector(
+            ButtonPressCount(EventPlayer(), EButtonInput.Interact) + 1,
+            _BH_Clock,
+            0
+        )
+        : Vector(1, _BH_Clock, 0);
+
+    WaitUntil(!EventPlayer().IsButtonHeld(Button.Interact), BH_WAIT_TIMEOUT);
+
+    // Flag the button as released, and store the hold-duration.
+    EventPlayer()._ButtonHandler.Interact = Vector(
+            ButtonPressCount(EventPlayer(), EButtonInput.Interact),
+            ButtonLastPressedTimestamp(EventPlayer(), EButtonInput.Interact),
+            _BH_Clock - ButtonLastPressedTimestamp(EventPlayer(), EButtonInput.Interact),
+        );
+    Wait(BH_MultiClickSpeed.Button - ButtonPostHoldLength(EventPlayer(), EButtonInput.Interact), WaitBehavior.RestartWhenTrue);
+
+    // Reset the button state.
+    EventPlayer()._ButtonHandler.Interact = false;
+}
+
+rule: "[BH] Jump"
+Event.OngoingPlayer
+if (EventPlayer().IsButtonHeld(Button.Jump))
+{
+    // Initialize or increment the pressed button state.
+    EventPlayer()._ButtonHandler.Jump = EventPlayer()._ButtonHandler.Jump
+        ? Vector(
+            ButtonPressCount(EventPlayer(), EButtonInput.Jump) + 1,
+            _BH_Clock,
+            0
+        )
+        : Vector(1, _BH_Clock, 0);
+
+    WaitUntil(!EventPlayer().IsButtonHeld(Button.Jump), BH_WAIT_TIMEOUT);
+
+    // Flag the button as released, and store the hold-duration.
+    EventPlayer()._ButtonHandler.Jump = Vector(
+            ButtonPressCount(EventPlayer(), EButtonInput.Jump),
+            ButtonLastPressedTimestamp(EventPlayer(), EButtonInput.Jump),
+            _BH_Clock - ButtonLastPressedTimestamp(EventPlayer(), EButtonInput.Jump),
+        );
+    Wait(BH_MultiClickSpeed.Button - ButtonPostHoldLength(EventPlayer(), EButtonInput.Jump), WaitBehavior.RestartWhenTrue);
+
+    // Reset the button state.
+    EventPlayer()._ButtonHandler.Jump = false;
+}
+
+rule: "[BH] Crouch"
+Event.OngoingPlayer
+if (EventPlayer().IsButtonHeld(Button.Crouch))
+{
+    // Initialize or increment the pressed button state.
+    EventPlayer()._ButtonHandler.Crouch = EventPlayer()._ButtonHandler.Crouch
+        ? Vector(
+            ButtonPressCount(EventPlayer(), EButtonInput.Crouch) + 1,
+            _BH_Clock,
+            0
+        )
+        : Vector(1, _BH_Clock, 0);
+
+    WaitUntil(!EventPlayer().IsButtonHeld(Button.Crouch), BH_WAIT_TIMEOUT);
+
+    // Flag the button as released, and store the hold-duration.
+    EventPlayer()._ButtonHandler.Crouch = Vector(
+            ButtonPressCount(EventPlayer(), EButtonInput.Crouch),
+            ButtonLastPressedTimestamp(EventPlayer(), EButtonInput.Crouch),
+            _BH_Clock - ButtonLastPressedTimestamp(EventPlayer(), EButtonInput.Crouch),
+        );
+    Wait(BH_MultiClickSpeed.Button - ButtonPostHoldLength(EventPlayer(), EButtonInput.Crouch), WaitBehavior.RestartWhenTrue);
+
+    // Reset the button state.
+    EventPlayer()._ButtonHandler.Crouch = false;
+}
+
+rule: "[BH] Melee"
+Event.OngoingPlayer
+if (EventPlayer().IsButtonHeld(Button.Melee))
+{
+    // Initialize or increment the pressed button state.
+    EventPlayer()._ButtonHandler.Melee = EventPlayer()._ButtonHandler.Melee
+        ? Vector(
+            ButtonPressCount(EventPlayer(), EButtonInput.Melee) + 1,
+            _BH_Clock,
+            0
+        )
+        : Vector(1, _BH_Clock, 0);
+
+    WaitUntil(!EventPlayer().IsButtonHeld(Button.Melee), BH_WAIT_TIMEOUT);
+
+    // Flag the button as released, and store the hold-duration.
+    EventPlayer()._ButtonHandler.Melee = Vector(
+            ButtonPressCount(EventPlayer(), EButtonInput.Melee),
+            ButtonLastPressedTimestamp(EventPlayer(), EButtonInput.Melee),
+            _BH_Clock - ButtonLastPressedTimestamp(EventPlayer(), EButtonInput.Melee),
+        );
+    Wait(BH_MultiClickSpeed.Button - ButtonPostHoldLength(EventPlayer(), EButtonInput.Melee), WaitBehavior.RestartWhenTrue);
+
+    // Reset the button state.
+    EventPlayer()._ButtonHandler.Melee = false;
+}
+
+rule: "[BH] Reload"
+Event.OngoingPlayer
+if (EventPlayer().IsButtonHeld(Button.Reload))
+{
+    // Initialize or increment the pressed button state.
+    EventPlayer()._ButtonHandler.Reload = EventPlayer()._ButtonHandler.Reload
+        ? Vector(
+            ButtonPressCount(EventPlayer(), EButtonInput.Reload) + 1,
+            _BH_Clock,
+            0
+        )
+        : Vector(1, _BH_Clock, 0);
+
+    WaitUntil(!EventPlayer().IsButtonHeld(Button.Reload), BH_WAIT_TIMEOUT);
+
+    // Flag the button as released, and store the hold-duration.
+    EventPlayer()._ButtonHandler.Reload = Vector(
+            ButtonPressCount(EventPlayer(), EButtonInput.Reload),
+            ButtonLastPressedTimestamp(EventPlayer(), EButtonInput.Reload),
+            _BH_Clock - ButtonLastPressedTimestamp(EventPlayer(), EButtonInput.Reload),
+        );
+    Wait(BH_MultiClickSpeed.Button - ButtonPostHoldLength(EventPlayer(), EButtonInput.Reload), WaitBehavior.RestartWhenTrue);
+
+    // Reset the button state.
+    EventPlayer()._ButtonHandler.Reload = false;
+}
+
+
+//
+// -- Spray Events --
+//
+
+
+rule: "[BH] Any Spray"
+Event.OngoingPlayer
+if (IsCommunicatingAnySpray(EventPlayer()))
+{
+    // Initialize or increment the pressed button state.
+    EventPlayer()._ButtonHandler.AnySpray = EventPlayer()._ButtonHandler.AnySpray
+        ? Vector(
+            ButtonPressCount(EventPlayer(), EButtonInput.AnySpray) + 1,
+            _BH_Clock,
+            0
+        )
+        : Vector(1, _BH_Clock, 0);
+
+    WaitUntil(!IsCommunicatingAnySpray(EventPlayer()), BH_WAIT_TIMEOUT);
+
+    // Flag the button as released, and store the hold-duration.
+    EventPlayer()._ButtonHandler.AnySpray = Vector(
+            ButtonPressCount(EventPlayer(), EButtonInput.AnySpray),
+            ButtonLastPressedTimestamp(EventPlayer(), EButtonInput.AnySpray),
+            _BH_Clock - ButtonLastPressedTimestamp(EventPlayer(), EButtonInput.AnySpray),
+        );
+    Wait(BH_MultiClickSpeed.Spray - ButtonPostHoldLength(EventPlayer(), EButtonInput.AnySpray), WaitBehavior.RestartWhenTrue);
+
+    // Reset the button state.
+    EventPlayer()._ButtonHandler.AnySpray = false;
+}
+
+rule: "[BH] Spray Up"
+Event.OngoingPlayer
+if (EventPlayer().IsCommunicating(Communication.SprayUp))
+{
+    // Initialize or increment the pressed button state.
+    EventPlayer()._ButtonHandler.SprayUp = EventPlayer()._ButtonHandler.SprayUp
+        ? Vector(
+            ButtonPressCount(EventPlayer(), EButtonInput.SprayUp) + 1,
+            _BH_Clock,
+            0
+        )
+        : Vector(1, _BH_Clock, 0);
+
+    WaitUntil(!EventPlayer().IsCommunicating(Communication.SprayUp), BH_WAIT_TIMEOUT);
+
+    // Flag the button as released, and store the hold-duration.
+    EventPlayer()._ButtonHandler.SprayUp = Vector(
+            ButtonPressCount(EventPlayer(), EButtonInput.SprayUp),
+            ButtonLastPressedTimestamp(EventPlayer(), EButtonInput.SprayUp),
+            _BH_Clock - ButtonLastPressedTimestamp(EventPlayer(), EButtonInput.SprayUp),
+        );
+    Wait(BH_MultiClickSpeed.Spray - ButtonPostHoldLength(EventPlayer(), EButtonInput.SprayUp), WaitBehavior.RestartWhenTrue);
+
+    // Reset the button state.
+    EventPlayer()._ButtonHandler.SprayUp = false;
+}
+
+rule: "[BH] Spray Down"
+Event.OngoingPlayer
+if (EventPlayer().IsCommunicating(Communication.SprayDown))
+{
+    // Initialize or increment the pressed button state.
+    EventPlayer()._ButtonHandler.SprayDown = EventPlayer()._ButtonHandler.SprayDown
+        ? Vector(
+            ButtonPressCount(EventPlayer(), EButtonInput.SprayDown) + 1,
+            _BH_Clock,
+            0
+        )
+        : Vector(1, _BH_Clock, 0);
+
+    WaitUntil(!EventPlayer().IsCommunicating(Communication.SprayDown), BH_WAIT_TIMEOUT);
+
+    // Flag the button as released, and store the hold-duration.
+    EventPlayer()._ButtonHandler.SprayDown = Vector(
+            ButtonPressCount(EventPlayer(), EButtonInput.SprayDown),
+            ButtonLastPressedTimestamp(EventPlayer(), EButtonInput.SprayDown),
+            _BH_Clock - ButtonLastPressedTimestamp(EventPlayer(), EButtonInput.SprayDown),
+        );
+    Wait(BH_MultiClickSpeed.Spray - ButtonPostHoldLength(EventPlayer(), EButtonInput.SprayDown), WaitBehavior.RestartWhenTrue);
+
+    // Reset the button state.
+    EventPlayer()._ButtonHandler.SprayDown = false;
+}
+
+rule: "[BH] Spray Left"
+Event.OngoingPlayer
+if (EventPlayer().IsCommunicating(Communication.SprayLeft))
+{
+    // Initialize or increment the pressed button state.
+    EventPlayer()._ButtonHandler.SprayLeft = EventPlayer()._ButtonHandler.SprayLeft
+        ? Vector(
+            ButtonPressCount(EventPlayer(), EButtonInput.SprayLeft) + 1,
+            _BH_Clock,
+            0
+        )
+        : Vector(1, _BH_Clock, 0);
+
+    WaitUntil(!EventPlayer().IsCommunicating(Communication.SprayLeft), BH_WAIT_TIMEOUT);
+
+    // Flag the button as released, and store the hold-duration.
+    EventPlayer()._ButtonHandler.SprayLeft = Vector(
+            ButtonPressCount(EventPlayer(), EButtonInput.SprayLeft),
+            ButtonLastPressedTimestamp(EventPlayer(), EButtonInput.SprayLeft),
+            _BH_Clock - ButtonLastPressedTimestamp(EventPlayer(), EButtonInput.SprayLeft),
+        );
+    Wait(BH_MultiClickSpeed.Spray - ButtonPostHoldLength(EventPlayer(), EButtonInput.SprayLeft), WaitBehavior.RestartWhenTrue);
+
+    // Reset the button state.
+    EventPlayer()._ButtonHandler.SprayLeft = false;
+}
+
+rule: "[BH] Spray Right"
+Event.OngoingPlayer
+if (EventPlayer().IsCommunicating(Communication.SprayRight))
+{
+    // Initialize or increment the pressed button state.
+    EventPlayer()._ButtonHandler.SprayRight = EventPlayer()._ButtonHandler.SprayRight
+        ? Vector(
+            ButtonPressCount(EventPlayer(), EButtonInput.SprayRight) + 1,
+            _BH_Clock,
+            0
+        )
+        : Vector(1, _BH_Clock, 0);
+
+    WaitUntil(!EventPlayer().IsCommunicating(Communication.SprayRight), BH_WAIT_TIMEOUT);
+
+    // Flag the button as released, and store the hold-duration.
+    EventPlayer()._ButtonHandler.SprayRight = Vector(
+            ButtonPressCount(EventPlayer(), EButtonInput.SprayRight),
+            ButtonLastPressedTimestamp(EventPlayer(), EButtonInput.SprayRight),
+            _BH_Clock - ButtonLastPressedTimestamp(EventPlayer(), EButtonInput.SprayRight),
+        );
+    Wait(BH_MultiClickSpeed.Spray - ButtonPostHoldLength(EventPlayer(), EButtonInput.SprayRight), WaitBehavior.RestartWhenTrue);
+
+    // Reset the button state.
+    EventPlayer()._ButtonHandler.SprayRight = false;
+}

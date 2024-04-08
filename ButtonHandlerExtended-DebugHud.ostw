@@ -1,0 +1,42 @@
+import "ButtonHandlerExtended.ostw";
+
+rule: "[BH] Global Debug HUD" -10
+{
+
+    // Shows the button multi-click speed.
+    CreateHudText(AllPlayers(), null, <"BH Button Multi-Click Speed: <0>", BH_MultiClickSpeed.Button>, null, Location.Right, -1000, null, Color.Gray, null, HudTextRev.VisibleToAndString);
+    CreateHudText(AllPlayers(), null, <"BH Spray Multi-Click Speed: <0>", BH_MultiClickSpeed.Spray>, null, Location.Right, -1000, null, Color.Gray, null, HudTextRev.VisibleToAndString);
+
+    // Shows the clock and server load stats.*
+    CreateHudText(AllPlayers(), null,
+    <"[<0>] <1>",
+        _BH_Clock,
+        <"Load: <0> | Avg: <1> | Peak: <2>",
+            ServerLoad(),
+            ServerLoadAverage(),
+            ServerLoadPeak()
+        >
+    >,
+    null, Location.Right, -999, null, Color.Gray, null, HudTextRev.VisibleToAndString);
+}
+
+rule: "[BH] Player Debug HUD" -9
+Event.OngoingPlayer
+{
+    CreateHudText(AllPlayers(), null, <"[Primary Fire] <0>", EventPlayer()._ButtonHandler.PrimaryFire>, null, Location.Left, -999, null, Color.Gray, null, HudTextRev.String);
+    CreateHudText(AllPlayers(), null, <"[Secondary Fire] <0>", EventPlayer()._ButtonHandler.SecondaryFire>, null, Location.Left, -998, null, Color.Gray, null, HudTextRev.String);
+    CreateHudText(AllPlayers(), null, <"[Ability1] <0>", EventPlayer()._ButtonHandler.Ability1>, null, Location.Left, -997, null, Color.Gray, null, HudTextRev.String);
+    CreateHudText(AllPlayers(), null, <"[Ability2] <0>", EventPlayer()._ButtonHandler.Ability2>, null, Location.Left, -996, null, Color.Gray, null, HudTextRev.String);
+    CreateHudText(AllPlayers(), null, <"[Ultimate] <0>", EventPlayer()._ButtonHandler.Ultimate>, null, Location.Left, -995, null, Color.Gray, null, HudTextRev.String);
+    CreateHudText(AllPlayers(), null, <"[Interact] <0>", EventPlayer()._ButtonHandler.Interact>, null, Location.Left, -994, null, Color.Gray, null, HudTextRev.String);
+    CreateHudText(AllPlayers(), null, <"[Jump] <0>", EventPlayer()._ButtonHandler.Jump>, null, Location.Left, -993, null, Color.Gray, null, HudTextRev.String);
+    CreateHudText(AllPlayers(), null, <"[Crouch] <0>", EventPlayer()._ButtonHandler.Crouch>, null, Location.Left, -992, null, Color.Gray, null, HudTextRev.String);
+    CreateHudText(AllPlayers(), null, <"[Melee] <0>", EventPlayer()._ButtonHandler.Melee>, null, Location.Left, -991, null, Color.Gray, null, HudTextRev.String);
+    CreateHudText(AllPlayers(), null, <"[Reload] <0>", EventPlayer()._ButtonHandler.Reload>, null, Location.Left, -990, null, Color.Gray, null, HudTextRev.String);
+
+    CreateHudText(AllPlayers(), null, <"[AnySpray] <0>", EventPlayer()._ButtonHandler.AnySpray>, null, Location.Left, -988, null, Color.Gray, null, HudTextRev.String);
+    CreateHudText(AllPlayers(), null, <"[SprayUp] <0>", EventPlayer()._ButtonHandler.SprayUp>, null, Location.Left, -987, null, Color.Gray, null, HudTextRev.String);
+    CreateHudText(AllPlayers(), null, <"[SprayDown] <0>", EventPlayer()._ButtonHandler.SprayDown>, null, Location.Left, -986, null, Color.Gray, null, HudTextRev.String);
+    CreateHudText(AllPlayers(), null, <"[SprayLeft] <0>", EventPlayer()._ButtonHandler.SprayLeft>, null, Location.Left, -985, null, Color.Gray, null, HudTextRev.String);
+    CreateHudText(AllPlayers(), null, <"[SprayRight] <0>", EventPlayer()._ButtonHandler.SprayRight>, null, Location.Left, -984, null, Color.Gray, null, HudTextRev.String);
+}

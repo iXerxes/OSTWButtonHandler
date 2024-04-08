@@ -118,23 +118,6 @@ rule: "[BH] Init Globals"
     BH_MultiClickSpeed = WorkshopSettingInteger("ButtonHandler", "Multi-Click Speed (ms)", BH_DEFAULT_MULTICLICK_TIMEOUT, BH_MIN_MULTICLICK_TIMEOUT, BH_MAX_MULTICLICK_TIMEOUT) / 1000;
 }
 
-rule: "[BH] Init Player"
-Event.OngoingPlayer
-{
-    EventPlayer()._ButtonHandler = {
-        PrimaryFire: false,
-        SecondaryFire: false,
-        Ability1: false,
-        Ability2: false,
-        Ultimate: false,
-        Interact: false,
-        Jump: false,
-        Crouch: false,
-        Melee: false,
-        Reload: false
-    };
-}
-
 
 //
 // -- Button Events --

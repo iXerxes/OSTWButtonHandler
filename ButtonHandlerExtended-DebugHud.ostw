@@ -1,0 +1,74 @@
+import "ButtonHandlerExtended.ostw";
+
+rule: "[BH] Global Debug HUD" -10
+{
+
+    // Shows thr button multi-click speed.
+    CreateHudText(AllPlayers(), null, <"BH Button Multi-Click Speed: <0>", BH_MultiClickSpeed.Button>, null, Location.Right, -1000, null, Color.Gray, null, HudTextRev.VisibleToAndString);
+    CreateHudText(AllPlayers(), null, <"BH Spray Multi-Click Speed: <0>", BH_MultiClickSpeed.Spray>, null, Location.Right, -1000, null, Color.Gray, null, HudTextRev.VisibleToAndString);
+    CreateHudText(AllPlayers(), null, <"BH VoiceLine Multi-Click Speed: <0>", BH_MultiClickSpeed.VoiceLine>, null, Location.Right, -1000, null, Color.Gray, null, HudTextRev.VisibleToAndString);
+    CreateHudText(AllPlayers(), null, <"BH Comms Multi-Click Speed: <0>", BH_MultiClickSpeed.Comms>, null, Location.Right, -1000, null, Color.Gray, null, HudTextRev.VisibleToAndString);
+
+    // Shows the clock and server load stats.*
+    CreateHudText(AllPlayers(), null,
+    <"[<0>] <1>",
+        _BH_Clock,
+        <"Load: <0> | Avg: <1> | Peak: <2>",
+            ServerLoad(),
+            ServerLoadAverage(),
+            ServerLoadPeak()
+        >
+    >,
+    null, Location.Right, -999, null, Color.Gray, null, HudTextRev.VisibleToAndString);
+}
+
+rule: "[BH] Player Debug HUD" -9
+Event.OngoingPlayer
+{
+    CreateHudText(AllPlayers(), null, <"[Primary Fire] <0>", EventPlayer()._ButtonHandler.PrimaryFire>, null, Location.Left, -999, null, Color.Gray, null, HudTextRev.String);
+    CreateHudText(AllPlayers(), null, <"[Secondary Fire] <0>", EventPlayer()._ButtonHandler.SecondaryFire>, null, Location.Left, -998, null, Color.Gray, null, HudTextRev.String);
+    CreateHudText(AllPlayers(), null, <"[Ability1] <0>", EventPlayer()._ButtonHandler.Ability1>, null, Location.Left, -997, null, Color.Gray, null, HudTextRev.String);
+    CreateHudText(AllPlayers(), null, <"[Ability2] <0>", EventPlayer()._ButtonHandler.Ability2>, null, Location.Left, -996, null, Color.Gray, null, HudTextRev.String);
+    CreateHudText(AllPlayers(), null, <"[Ultimate] <0>", EventPlayer()._ButtonHandler.Ultimate>, null, Location.Left, -995, null, Color.Gray, null, HudTextRev.String);
+    CreateHudText(AllPlayers(), null, <"[Interact] <0>", EventPlayer()._ButtonHandler.Interact>, null, Location.Left, -994, null, Color.Gray, null, HudTextRev.String);
+    CreateHudText(AllPlayers(), null, <"[Jump] <0>", EventPlayer()._ButtonHandler.Jump>, null, Location.Left, -993, null, Color.Gray, null, HudTextRev.String);
+    CreateHudText(AllPlayers(), null, <"[Crouch] <0>", EventPlayer()._ButtonHandler.Crouch>, null, Location.Left, -992, null, Color.Gray, null, HudTextRev.String);
+    CreateHudText(AllPlayers(), null, <"[Melee] <0>", EventPlayer()._ButtonHandler.Melee>, null, Location.Left, -991, null, Color.Gray, null, HudTextRev.String);
+    CreateHudText(AllPlayers(), null, <"[Reload] <0>", EventPlayer()._ButtonHandler.Reload>, null, Location.Left, -990, null, Color.Gray, null, HudTextRev.String);
+
+    CreateHudText(AllPlayers(), null, <"[AnySpray] <0>", EventPlayer()._ButtonHandler.AnySpray>, null, Location.Left, -988, null, Color.Gray, null, HudTextRev.String);
+    CreateHudText(AllPlayers(), null, <"[SprayUp] <0>", EventPlayer()._ButtonHandler.SprayUp>, null, Location.Left, -987, null, Color.Gray, null, HudTextRev.String);
+    CreateHudText(AllPlayers(), null, <"[SprayDown] <0>", EventPlayer()._ButtonHandler.SprayDown>, null, Location.Left, -986, null, Color.Gray, null, HudTextRev.String);
+    CreateHudText(AllPlayers(), null, <"[SprayLeft] <0>", EventPlayer()._ButtonHandler.SprayLeft>, null, Location.Left, -985, null, Color.Gray, null, HudTextRev.String);
+    CreateHudText(AllPlayers(), null, <"[SprayRight] <0>", EventPlayer()._ButtonHandler.SprayRight>, null, Location.Left, -984, null, Color.Gray, null, HudTextRev.String);
+    
+    CreateHudText(AllPlayers(), null, <"[AnyVoiceLine] <0>", EventPlayer()._ButtonHandler.AnyVoiceLine>, null, Location.Left, -983, null, Color.Gray, null, HudTextRev.String);
+    CreateHudText(AllPlayers(), null, <"[VoiceLineUp] <0>", EventPlayer()._ButtonHandler.VoiceLineUp>, null, Location.Left, -982, null, Color.Gray, null, HudTextRev.String);
+    CreateHudText(AllPlayers(), null, <"[VoiceLineDown] <0>", EventPlayer()._ButtonHandler.VoiceLineDown>, null, Location.Left, -981, null, Color.Gray, null, HudTextRev.String);
+    CreateHudText(AllPlayers(), null, <"[VoiceLineLeft] <0>", EventPlayer()._ButtonHandler.VoiceLineLeft>, null, Location.Left, -980, null, Color.Gray, null, HudTextRev.String);
+    CreateHudText(AllPlayers(), null, <"[VoiceLineLRight] <0>", EventPlayer()._ButtonHandler.VoiceLineRight>, null, Location.Left, -979, null, Color.Gray, null, HudTextRev.String);
+
+    CreateHudText(AllPlayers(), null, <"[Acknowledge] <0>", EventPlayer()._ButtonHandler.Acknowledge>, null, Location.Left, -978, null, Color.Gray, null, HudTextRev.String);
+    CreateHudText(AllPlayers(), null, <"[Attacking] <0>", EventPlayer()._ButtonHandler.Attacking>, null, Location.Left, -977, null, Color.Gray, null, HudTextRev.String);
+    CreateHudText(AllPlayers(), null, <"[Defending] <0>", EventPlayer()._ButtonHandler.Defending>, null, Location.Left, -976, null, Color.Gray, null, HudTextRev.String);
+    CreateHudText(AllPlayers(), null, <"[Countdown] <0>", EventPlayer()._ButtonHandler.Countdown>, null, Location.Left, -975, null, Color.Gray, null, HudTextRev.String);
+    CreateHudText(AllPlayers(), null, <"[FallBack] <0>", EventPlayer()._ButtonHandler.FallBack>, null, Location.Left, -974, null, Color.Gray, null, HudTextRev.String);
+    CreateHudText(AllPlayers(), null, <"[Go] <0>", EventPlayer()._ButtonHandler.Go>, null, Location.Left, -973, null, Color.Gray, null, HudTextRev.String);
+    CreateHudText(AllPlayers(), null, <"[GoingIn] <0>", EventPlayer()._ButtonHandler.GoingIn>, null, Location.Left, -972, null, Color.Gray, null, HudTextRev.String);
+    CreateHudText(AllPlayers(), null, <"[Goodbye] <0>", EventPlayer()._ButtonHandler.Goodbye>, null, Location.Left, -971, null, Color.Gray, null, HudTextRev.String);
+    CreateHudText(AllPlayers(), null, <"[GroupUp] <0>", EventPlayer()._ButtonHandler.GroupUp>, null, Location.Left, -970, null, Color.Gray, null, HudTextRev.String);
+    CreateHudText(AllPlayers(), null, <"[Hello] <0>", EventPlayer()._ButtonHandler.Hello>, null, Location.Left, -969, null, Color.Gray, null, HudTextRev.String);
+    CreateHudText(AllPlayers(), null, <"[Incoming] <0>", EventPlayer()._ButtonHandler.Incoming>, null, Location.Left, -968, null, Color.Gray, null, HudTextRev.String);
+    CreateHudText(AllPlayers(), null, <"[NeedHealing] <0>", EventPlayer()._ButtonHandler.NeedHealing>, null, Location.Left, -967, null, Color.Gray, null, HudTextRev.String);
+    CreateHudText(AllPlayers(), null, <"[NeedHelp] <0>", EventPlayer()._ButtonHandler.NeedHelp>, null, Location.Left, -966, null, Color.Gray, null, HudTextRev.String);
+    CreateHudText(AllPlayers(), null, <"[OnMyWay] <0>", EventPlayer()._ButtonHandler.OnMyWay>, null, Location.Left, -965, null, Color.Gray, null, HudTextRev.String);
+    CreateHudText(AllPlayers(), null, <"[PressTheAttack] <0>", EventPlayer()._ButtonHandler.PressTheAttack>, null, Location.Left, -964, null, Color.Gray, null, HudTextRev.String);
+    CreateHudText(AllPlayers(), null, <"[Ready] <0>", EventPlayer()._ButtonHandler.Ready>, null, Location.Left, -963, null, Color.Gray, null, HudTextRev.String);
+    CreateHudText(AllPlayers(), null, <"[Sorry] <0>", EventPlayer()._ButtonHandler.Sorry>, null, Location.Left, -962, null, Color.Gray, null, HudTextRev.String);
+    CreateHudText(AllPlayers(), null, <"[Thanks] <0>", EventPlayer()._ButtonHandler.Thanks>, null, Location.Left, -961, null, Color.Gray, null, HudTextRev.String);
+    CreateHudText(AllPlayers(), null, <"[UltimateStatus] <0>", EventPlayer()._ButtonHandler.UltimateStatus>, null, Location.Left, -960, null, Color.Gray, null, HudTextRev.String);
+    CreateHudText(AllPlayers(), null, <"[WithYou] <0>", EventPlayer()._ButtonHandler.WithYou>, null, Location.Left, -959, null, Color.Gray, null, HudTextRev.String);
+    CreateHudText(AllPlayers(), null, <"[Yes] <0>", EventPlayer()._ButtonHandler.Yes>, null, Location.Left, -958, null, Color.Gray, null, HudTextRev.String);
+    CreateHudText(AllPlayers(), null, <"[No] <0>", EventPlayer()._ButtonHandler.No>, null, Location.Left, -957, null, Color.Gray, null, HudTextRev.String);
+    CreateHudText(AllPlayers(), null, <"[YouAreWelcome] <0>", EventPlayer()._ButtonHandler.YouAreWelcome>, null, Location.Left, -956, null, Color.Gray, null, HudTextRev.String);
+}

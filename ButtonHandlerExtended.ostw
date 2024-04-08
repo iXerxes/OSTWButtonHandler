@@ -1,4 +1,3 @@
-import "D:\Jordan\Overwatch\Workshop\OSTW\_Environments\NepalDev.json";
 
 Number BH_WAIT_TIMEOUT: 999999;
 

@@ -3,7 +3,7 @@ import "ButtonHandler.ostw";
 rule: "[BH] Global Debug HUD" -10
 {
 
-    // Shows thr button multi-click speed.
+    // Shows the button multi-click speed.
     CreateHudText(AllPlayers(), null, <"BH Multi-Click Speed: <0>", BH_MultiClickSpeed>, null, Location.Right, -1000, null, Color.Gray, null, HudTextRev.VisibleToAndString);
 
     // Shows the clock and server load stats.

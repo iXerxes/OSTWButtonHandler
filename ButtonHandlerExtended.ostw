@@ -1,4 +1,3 @@
-import "D:\Jordan\Overwatch\Workshop\OSTW\_Environments\NepalDev.json";
 
 Number BH_WAIT_TIMEOUT: 999999;
 
@@ -223,29 +222,6 @@ rule: "[BH] Init Globals"
     // General communication. Communications last varying lengths of time.
     BH_MultiClickSpeed.Comms = WorkshopSettingInteger("Button Handler", "Comms Multi-Click Speed (ms)", 2100, 1000, 15000, 3) / 1000;
 }
-
-// rule: "[BH] Init Player"
-// Event.OngoingPlayer
-// {
-//     // EventPlayer()._ButtonHandler = {
-//     //     PrimaryFire: false,
-//     //     SecondaryFire: false,
-//     //     Ability1: false,
-//     //     Ability2: false,
-//     //     Ultimate: false,
-//     //     Interact: false,
-//     //     Jump: false,
-//     //     Crouch: false,
-//     //     Melee: false,
-//     //     Reload: false,
-
-//     //     AnySpray: false,
-//     //     SprayUp: false,
-//     //     SprayDown: false,
-//     //     SprayLeft: false,
-//     //     SprayRight: false
-//     // };
-// }
 
 
 //
